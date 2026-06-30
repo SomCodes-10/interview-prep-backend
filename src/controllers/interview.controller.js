@@ -77,27 +77,36 @@ async function getAllInterviewReportsController(req,res) {
  */
 
 async function generateResumePdfController(req,res) {
-  const {interviewReportId} = req.params
+  try {
+    const {interviewReportId} = req.params
 
-  const interviewReport = await interviewReportModel.findOne({
-    _id: interviewReportId,
-    user: req.user.id
-  })
+    const interviewReport = await interviewReportModel.findOne({
+      _id: interviewReportId,
+      user: req.user.id
+    })
 
-  if(!interviewReport){
-    return res.status(404).json({
-      message: "Interview report not found"
+    if(!interviewReport){
+      return res.status(404).json({
+        message: "Interview report not found"
+      })
+    }
+    
+    const {resume,selfDescription,jobDescription} = interviewReport
+    const pdfBuffer = await generateResumePdf({resume,selfDescription,jobDescription})
+
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="resume_${interviewReportId}.pdf"`
+    })
+    res.send(pdfBuffer)
+  } catch (err) {
+    console.error("Error generating PDF:", err);
+    res.status(500).json({
+      message: "Failed to generate resume PDF",
+      error: err.message,
+      stack: err.stack
     })
   }
-  const {resume,selfDescription,jobDescription} = interviewReport
-
-  const pdfBuffer = await generateResumePdf({resume,selfDescription,jobDescription})
-
-  res.set({
-    "Content-Type": "application/pdf",
-    "Content-Disposition": `attachment; filename="resume_${interviewReportId}.pdf"`
-  })
-  res.send(pdfBuffer)
 }
 
 module.exports = {generateInterviewReportController,getInterviewReportByIdController,getAllInterviewReportsController,generateResumePdfController}
