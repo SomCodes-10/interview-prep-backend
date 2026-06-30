@@ -7,7 +7,8 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
   origin:"https://interview-prep-frontend-ashy.vercel.app",
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
 /* require all the routes here */
