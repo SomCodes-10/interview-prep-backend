@@ -48,14 +48,11 @@ res.cookie("token", token, {
   sameSite: "none"
 })
 
-  res.status(201).json({
-    message: "User registered successfully",
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email
-    }
-  })
+  res.status(200).json({
+  message: "User logged in successfully",
+  token,
+  user: { id: user._id, username: user.username, email: user.email }
+})
 }
 
 /**
@@ -95,13 +92,10 @@ async function loginUserController(req, res) {
   sameSite: "none"
 })
   res.status(200).json({
-    message: "User logged in successfully",
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email
-    }
-  })
+  message: "User logged in successfully",
+  token,
+  user: { id: user._id, username: user.username, email: user.email }
+})
 }
 
 /**
