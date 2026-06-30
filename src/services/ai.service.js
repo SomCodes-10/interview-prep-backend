@@ -79,7 +79,8 @@ Generate a detailed report including:
 
 async function generatePdfFromHtml(htmlContent) {
   const browser = await puppeteer.launch({
-    headless: "new" // Optimized for newer puppeteer versions
+    headless: "new", // Optimized for newer puppeteer versions
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
 
