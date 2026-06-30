@@ -100,12 +100,8 @@ async function generateResumePdfController(req,res) {
     })
     res.send(pdfBuffer)
   } catch (err) {
-    console.error("Error generating PDF:", err);
-    res.status(500).json({
-      message: "Failed to generate resume PDF",
-      error: err.message,
-      stack: err.stack
-    })
+    console.error("PDF Gen Error:", err.message);
+    res.status(500).json({ error: "Failed to generate PDF", details: err.message });
   }
 }
 
