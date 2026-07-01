@@ -78,24 +78,43 @@ Generate a detailed report including:
 }
 
 async function generatePdfFromHtml(htmlContent) {
-  const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--single-process', '--no-zygote'],
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath()
-  });
-  const page = await browser.newPage();
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: 'new',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--single-process',
+        '--no-zygote'
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+    });
 
-  // networkidle0 ensures all fonts/styles are completely loaded before printing
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    const page = await browser.newPage();
 
-  // preferCSSPageSize guarantees that your inline CSS margins are respected
-  const pdfBuffer = await page.pdf({
-    format: "A4",
-    printBackground: true, // Crucial for background colors/colors to show in PDF
-    margin: { top: "20px", bottom: "20px", left: "20px", right: "20px" }
-  });
+    // networkidle0 ensures all fonts/styles are completely loaded before printing
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-  await browser.close();
-  return pdfBuffer;
+    // preferCSSPageSize guarantees that your inline CSS margins are respected
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true, // Crucial for background colors/colors to show in PDF
+      margin: { top: "20px", bottom: "20px", left: "20px", right: "20px" }
+    });
+
+    return pdfBuffer;
+  } catch (err) {
+    console.error("Puppeteer PDF generation failed:");
+    console.error("Error message:", err.message);
+    console.error("Full stack:", err.stack);
+    throw err;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
 }
 
 async function generateResumePdf({ resume, selfDescription, jobDescription }) {
