@@ -96,15 +96,26 @@ async function generatePdfFromHtml(htmlContent) {
       });
     } catch (initialError) {
       console.error("Explicit path failed, triggering automatic local chromium fallback:", initialError.message);
-      // Stage 2: Let Puppeteer automatically find the local chrome downloaded via our build command
-      browser = await puppeteer.launch({
-        headless: 'new',
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage'
-        ]
-      });
+      // Puppeteer reads PUPPETEER_EXECUTABLE_PATH from process.env internally,
+      // so we must temporarily clear it to force bundled-chromium discovery.
+      const savedPath = process.env.PUPPETEER_EXECUTABLE_PATH;
+      delete process.env.PUPPETEER_EXECUTABLE_PATH;
+      try {
+        browser = await puppeteer.launch({
+          headless: 'new',
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage'
+          ]
+        });
+        console.log("Fallback Puppeteer launch succeeded.");
+      } finally {
+        // Restore the env var so other parts of the app aren't affected
+        if (savedPath) {
+          process.env.PUPPETEER_EXECUTABLE_PATH = savedPath;
+        }
+      }
     }
 
     const page = await browser.newPage();
