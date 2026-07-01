@@ -80,17 +80,32 @@ Generate a detailed report including:
 async function generatePdfFromHtml(htmlContent) {
   let browser;
   try {
-    browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--single-process',
-        '--no-zygote'
-      ],
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
-    });
+    // Stage 1: Try launching with explicit environment path
+    try {
+      console.log("Attempting to launch Puppeteer with explicit environment path...");
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--single-process',
+          '--no-zygote'
+        ],
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+      });
+    } catch (initialError) {
+      console.error("Explicit path failed, triggering automatic local chromium fallback:", initialError.message);
+      // Stage 2: Let Puppeteer automatically find the local chrome downloaded via our build command
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage'
+        ]
+      });
+    }
 
     const page = await browser.newPage();
 
