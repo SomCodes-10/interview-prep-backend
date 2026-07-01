@@ -1,9 +1,13 @@
+const path = require('path');
+const os = require('os');
+
+// MUST be set before requiring puppeteer — Puppeteer reads its config at require() time.
+// Uses os.homedir() so it resolves to a writable path on any server (e.g. /root/.cache/puppeteer on Render).
+process.env.PUPPETEER_CACHE_DIR = path.join(os.homedir(), '.cache', 'puppeteer');
+
 const { GoogleGenAI, Behavior } = require("@google/genai")
 const { z } = require("zod")
 const puppeteer = require("puppeteer")
-
-// Force Puppeteer to point to Render's explicit cache directory before any logic triggers
-process.env.PUPPETEER_CACHE_DIR = '/opt/render/.cache/puppeteer';
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_GEN_AI_API_KEY
