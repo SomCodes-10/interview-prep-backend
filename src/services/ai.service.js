@@ -1,10 +1,8 @@
 const path = require('path');
 const os = require('os');
 
-// MUST be set before requiring puppeteer — Puppeteer reads its config at require() time.
-// Uses os.homedir() so it resolves to a writable path on any server (e.g. /root/.cache/puppeteer on Render).
-process.env.PUPPETEER_CACHE_DIR = path.join(os.homedir(), '.cache', 'puppeteer');
-
+// Puppeteer configuration (like cache directory) is now handled automatically
+// via the .puppeteerrc.cjs file in the project root.
 const { GoogleGenAI, Behavior } = require("@google/genai")
 const { z } = require("zod")
 const puppeteer = require("puppeteer")
