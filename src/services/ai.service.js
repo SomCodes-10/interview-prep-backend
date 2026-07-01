@@ -2,6 +2,9 @@ const { GoogleGenAI, Behavior } = require("@google/genai")
 const { z } = require("zod")
 const puppeteer = require("puppeteer")
 
+// Force Puppeteer to point to Render's explicit cache directory before any logic triggers
+process.env.PUPPETEER_CACHE_DIR = '/opt/render/.cache/puppeteer';
+
 const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_GEN_AI_API_KEY
 })
@@ -97,7 +100,7 @@ async function generatePdfFromHtml(htmlContent) {
     } catch (initialError) {
       console.error("Explicit path failed, triggering automatic local chromium fallback:", initialError.message);
       // Puppeteer reads PUPPETEER_EXECUTABLE_PATH from process.env internally,
-      // so we must temporarily clear it to force bundled-chromium discovery.
+      // so we must temporarily clear it to force bundled-chromium discovery via PUPPETEER_CACHE_DIR.
       const savedPath = process.env.PUPPETEER_EXECUTABLE_PATH;
       delete process.env.PUPPETEER_EXECUTABLE_PATH;
       try {
@@ -106,7 +109,9 @@ async function generatePdfFromHtml(htmlContent) {
           args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage'
+            '--disable-dev-shm-usage',
+            '--single-process',
+            '--no-zygote'
           ]
         });
         console.log("Fallback Puppeteer launch succeeded.");
